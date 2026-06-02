@@ -92,13 +92,12 @@ export function ResultPanel({ result, personName, onReset }: ResultPanelProps) {
             <Stack spacing={3}>
               <Gauge score={result.score} rating={result.rating} />
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} useFlexGap sx={{ flexWrap: 'wrap' }}>
-                <MetricCard label="Ingreso mensual ref." value={formatCurrency(result.incomeEstimate.estimatedIncome)} hint={`Confianza ${result.incomeEstimate.confidence}`} />
                 <MetricCard label="Ingreso mensual" value={formatCurrency(result.incomeEstimate.estimatedIncome)} hint="Dato manual declarado" />
                 <MetricCard label="Deuda actual" value={formatCurrency(result.stats.currentDebt)} hint="Foto mas reciente" />
                 <MetricCard label="Promedio historico" value={formatCurrency(result.stats.averageDebt)} hint={`${result.stats.periodsCount} periodos`} />
                 <MetricCard label="Pico observado" value={formatCurrency(result.stats.peakDebt)} hint="Maximo del historial" />
                 <MetricCard label="Peor situacion" value={String(result.stats.maxSituation)} hint="Mayor severidad BCRA" />
-                <MetricCard label="Carga estimada" value={`${(result.stats.monthlyBurden * 100).toFixed(0)}%`} hint="Deuda / ingreso estimado" />
+                <MetricCard label="Carga estimada" value={`${(result.stats.monthlyBurden * 100).toFixed(0)}%`} hint="Deuda / ingreso declarado" />
               </Stack>
             </Stack>
             </CardContent>
