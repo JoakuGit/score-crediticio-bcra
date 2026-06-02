@@ -1,4 +1,5 @@
 import type {
+  ApplicantInputs,
   BcraTimelineItem,
   CheckResult,
   DebtEntity,
@@ -108,38 +109,10 @@ function buildEntities(current?: DebtResult, historic?: DebtResult): EntitySnaps
   return [...map.values()].sort((a, b) => b.totalDebt - a.totalDebt).slice(0, 5);
 }
 
-function estimateIncomeFromHistory(
-  currentDebt: number,
-  averageDebt: number,
-  peakDebt: number,
-  periodsCount: number,
-  maxSituation: number,
-  overdueDays: number,
-): IncomeEstimate {
-  const weightedDebt = currentDebt * 0.58 + averageDebt * 0.27 + peakDebt * 0.15;
-  const debtToIncomeRatio = maxSituation >= 5
-    ? 13
-    : maxSituation === 4
-      ? 10
-      : maxSituation === 3
-        ? 8
-        : maxSituation === 2
-          ? 6
-          : 4.5;
-  const overdueFactor = overdueDays >= 180 ? 0.55 : overdueDays >= 90 ? 0.68 : overdueDays >= 30 ? 0.82 : 1;
-  const continuityFactor = periodsCount >= 12 ? 1 : periodsCount >= 6 ? 0.96 : 0.9;
-  const estimatedIncome = Math.round(clamp(Math.max(180000, weightedDebt / debtToIncomeRatio) * overdueFactor * continuityFactor, 180000, 2500000) / 10000) * 10000;
-
-  const confidence = periodsCount >= 12
-    ? 'alta'
-    : periodsCount >= 6
-      ? 'media'
-      : 'baja';
-
+function buildIncomeReference(applicant: ApplicantInputs): IncomeEstimate {
   return {
-    estimatedIncome,
-    confidence,
-    description: 'Estimacion mensual conservadora inferida desde deuda observada, continuidad historica, situacion BCRA y dias de atraso. No representa ingreso real verificado.',
+    estimatedIncome: applicant.ingresoMensual,
+    description: `Referencia manual declarada: ${applicant.edad} anios y ${new Intl.NumberFormat('es-AR').format(applicant.ingresoMensual)} pesos mensuales.`,
   };
 }
 
@@ -173,6 +146,7 @@ export function calculateScore(
   current: DebtResult | undefined,
   historic: DebtResult | undefined,
   checks: CheckResult | undefined,
+  applicant: ApplicantInputs,
 ): ScoreResult {
   const currentEntities = latestEntities(current);
   const historicEntities = allEntities(historic);
@@ -195,7 +169,7 @@ export function calculateScore(
     (entity) => entity.procesoJud || entity.situacionJuridica || entity.irrecDisposicionTecnica,
   ).length;
   const refinanceFlags = combinedEntities.filter((entity) => entity.refinanciaciones || entity.recategorizacionOblig).length;
-  const incomeEstimate = estimateIncomeFromHistory(totalDebt, averageDebt, peakDebt, periodsCount, maxSituation, overdueDays);
+  const incomeEstimate = buildIncomeReference(applicant);
   const monthlyBurden = incomeEstimate.estimatedIncome > 0 ? totalDebt / incomeEstimate.estimatedIncome : 0;
   const debtTrend = timeline.length >= 2 && timeline[timeline.length - 1].debt > 0
     ? (timeline[0].debt - timeline[timeline.length - 1].debt) / timeline[timeline.length - 1].debt
@@ -246,7 +220,7 @@ export function calculateScore(
       'Carga estimada',
       100 - clamp(monthlyBurden * 100, 0, 92),
       100,
-      `La deuda vigente representa ${(monthlyBurden * 100).toFixed(0)}% del ingreso mensual de referencia estimado desde el historial.`,
+      `La deuda vigente representa ${(monthlyBurden * 100).toFixed(0)}% del ingreso mensual declarado.`,
     ),
     factor(
       'historial-pagos',

@@ -3,23 +3,28 @@ import { Alert, Card, CardContent, Stack, TextField, Typography } from '@mui/mat
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 import { Button } from '../atoms/Button';
+import type { ApplicantInputs } from '../../types';
 
 interface ConsultationFlowProps {
   identification: string;
+  applicant: ApplicantInputs;
   loading: boolean;
   error: string;
   canContinue: boolean;
   onIdentificationChange: (value: string) => void;
+  onApplicantChange: (value: ApplicantInputs) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onLoadDemo: () => void;
 }
 
 export function ConsultationFlow({
   identification,
+  applicant,
   loading,
   error,
   canContinue,
   onIdentificationChange,
+  onApplicantChange,
   onSubmit,
   onLoadDemo,
 }: ConsultationFlowProps) {
@@ -41,8 +46,27 @@ export function ConsultationFlow({
           fullWidth
         />
 
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+          <TextField
+            label="Edad"
+            type="number"
+            value={applicant.edad}
+            onChange={(event) => onApplicantChange({ ...applicant, edad: Number(event.target.value) })}
+            inputProps={{ min: 18, max: 100 }}
+            fullWidth
+          />
+          <TextField
+            label="Ingreso mensual"
+            type="number"
+            value={applicant.ingresoMensual}
+            onChange={(event) => onApplicantChange({ ...applicant, ingresoMensual: Number(event.target.value) })}
+            inputProps={{ min: 0, step: 10000 }}
+            fullWidth
+          />
+        </Stack>
+
         <Alert severity="info" icon={<AutoAwesomeRoundedIcon fontSize="inherit" />}>
-          El calculo usa deuda actual, historial, situacion, dias de atraso, observaciones y cheques rechazados publicados por el BCRA.
+          El calculo usa datos del BCRA y toma como referencia manual la edad y el ingreso mensual que declares.
         </Alert>
 
         {error && <Alert severity="error">{error}</Alert>}

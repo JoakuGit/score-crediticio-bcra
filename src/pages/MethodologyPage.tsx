@@ -7,7 +7,7 @@ const factors = [
   ['Situación regulatoria', 'Penaliza con fuerza la peor situación observada. Si la situación es distinta de 1, ya existe una señal de riesgo.'],
   ['Comportamiento reciente', 'Mide severidad actual usando situación y atraso de la última foto.'],
   ['Evolución de deuda', 'Compara el nivel de deuda reciente con el inicio del historial disponible.'],
-  ['Carga estimada', 'Usa una referencia mensual conservadora inferida desde deuda, situación y atraso observados en BCRA.'],
+  ['Carga estimada', 'Usa el ingreso mensual declarado manualmente como referencia frente a la deuda observada.'],
   ['Historial de pagos', 'Penaliza situación promedio deteriorada y cheques rechazados.'],
   ['Concentración', 'Observa cuántas entidades informan deuda en el historial.'],
   ['Alertas legales', 'Resta por señales judiciales, técnicas o anomalías públicas.'],
@@ -25,7 +25,7 @@ export function MethodologyPage() {
           </Stack>
           <Typography color="text.secondary">
             El score es orientativo y prioriza el historial publico del BCRA. Los montos se interpretan en miles de pesos,
-            por lo que un valor como 4.432 se toma como $4.432.000. El algoritmo no pide edad ni datos manuales: se apoya solo en la informacion publicada por BCRA.
+            por lo que un valor como 4.432 se toma como $4.432.000. Ademas usa edad e ingreso mensual declarados manualmente como referencia complementaria.
           </Typography>
           </CardContent>
         </Card>

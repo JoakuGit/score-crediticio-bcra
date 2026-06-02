@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { Alert, Card, CardContent, Container, Stack, Typography } from '@mui/material';
 import { fetchDebtReport, fetchHistoricDebtReport, fetchRejectedChecks } from '../bcraApi';
 import { calculateScore } from '../scoring';
-import type { CheckResult, DebtResult, ScoreResult } from '../types';
+import type { ApplicantInputs, CheckResult, DebtResult, ScoreResult } from '../types';
 import { AnalysisLoader } from '../components/organisms/AnalysisLoader';
 import { ConsultationFlow } from '../components/organisms/ConsultationFlow';
 import { ResultPanel } from '../components/organisms/ResultPanel';
@@ -39,10 +39,16 @@ const loaderStages = [
   'Armando score final',
 ];
 
+const initialApplicant: ApplicantInputs = {
+  edad: 30,
+  ingresoMensual: 1000000,
+};
+
 const delay = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
 interface PersistedSession {
   identification: string;
+  applicant: ApplicantInputs;
   personName: string;
   result: ScoreResult | null;
 }
@@ -61,6 +67,7 @@ function readSession(): PersistedSession | null {
 export function CalculatorPage() {
   const persisted = typeof window !== 'undefined' ? readSession() : null;
   const [identification, setIdentification] = useState(persisted?.identification ?? '');
+  const [applicant, setApplicant] = useState<ApplicantInputs>(persisted?.applicant ?? initialApplicant);
   const [result, setResult] = useState<ScoreResult | null>(persisted?.result ?? null);
   const [personName, setPersonName] = useState(persisted?.personName ?? '');
   const [loading, setLoading] = useState(false);
@@ -70,8 +77,8 @@ export function CalculatorPage() {
   const canContinue = identification.replace(/\D/g, '').length >= 8;
 
   useEffect(() => {
-    window.sessionStorage.setItem(SESSION_KEY, JSON.stringify({ identification, personName, result }));
-  }, [identification, personName, result]);
+    window.sessionStorage.setItem(SESSION_KEY, JSON.stringify({ identification, applicant, personName, result }));
+  }, [identification, applicant, personName, result]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -101,7 +108,7 @@ export function CalculatorPage() {
 
       const name = current.denominacion || historic.denominacion || 'Persona consultada';
       setPersonName(name);
-      setResult(calculateScore(current, historic, checks));
+      setResult(calculateScore(current, historic, checks, applicant));
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'No se pudo consultar el servicio del BCRA.');
       setResult(null);
@@ -113,8 +120,9 @@ export function CalculatorPage() {
 
   function loadDemo() {
     setIdentification('20123456789');
+    setApplicant({ edad: 34, ingresoMensual: 950000 });
     setPersonName('EJEMPLO DEMO');
-    setResult(calculateScore(sampleCurrent, sampleHistoric, sampleChecks));
+    setResult(calculateScore(sampleCurrent, sampleHistoric, sampleChecks, { edad: 34, ingresoMensual: 950000 }));
     setError('');
   }
 
@@ -148,10 +156,12 @@ export function CalculatorPage() {
           <Stack spacing={3}>
             <ConsultationFlow
               identification={identification}
+              applicant={applicant}
               loading={loading}
               error={error}
               canContinue={canContinue}
               onIdentificationChange={setIdentification}
+              onApplicantChange={setApplicant}
               onSubmit={handleSubmit}
               onLoadDemo={loadDemo}
             />

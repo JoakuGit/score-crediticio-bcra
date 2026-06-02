@@ -58,6 +58,11 @@ export interface CheckResult {
   causales?: CheckCausal[] | null;
 }
 
+export interface ApplicantInputs {
+  edad: number;
+  ingresoMensual: number;
+}
+
 export interface TimelineEntityDetail {
   entity: string;
   debt: number;
@@ -83,7 +88,6 @@ export interface EntitySnapshot {
 
 export interface IncomeEstimate {
   estimatedIncome: number;
-  confidence: 'alta' | 'media' | 'baja';
   description: string;
 }
 
