@@ -58,11 +58,33 @@ export interface CheckResult {
   causales?: CheckCausal[] | null;
 }
 
-export interface ApplicantInputs {
-  edad: number;
-  ingresosMensuales: number;
-  antiguedadLaboralMeses: number;
-  empleoEstable: boolean;
+export interface TimelineEntityDetail {
+  entity: string;
+  debt: number;
+  situation: number;
+  overdueDays: number | null;
+  observations: string[];
+}
+
+export interface BcraTimelineItem {
+  period: string;
+  debt: number;
+  entitiesCount: number;
+  maxSituation: number;
+  entities: TimelineEntityDetail[];
+}
+
+export interface EntitySnapshot {
+  entity: string;
+  periods: number;
+  totalDebt: number;
+  maxSituation: number;
+}
+
+export interface IncomeEstimate {
+  estimatedIncome: number;
+  confidence: 'alta' | 'media' | 'baja';
+  description: string;
 }
 
 export interface ScoreFactor {
@@ -79,9 +101,15 @@ export interface ScoreResult {
   rating: string;
   summary: string;
   factors: ScoreFactor[];
+  alerts: string[];
+  timeline: BcraTimelineItem[];
+  entities: EntitySnapshot[];
+  incomeEstimate: IncomeEstimate;
   stats: {
     totalDebt: number;
     currentDebt: number;
+    averageDebt: number;
+    peakDebt: number;
     maxSituation: number;
     averageSituation: number;
     entitiesCount: number;
